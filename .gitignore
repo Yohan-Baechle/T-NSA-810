@@ -1,0 +1,33 @@
+# Clés privées
+*.key
+*.pem
+*.p12
+
+# Fichier mot de passe vault (JAMAIS commiter)
+ansible/vault_password.txt
+
+# Python
+.venv/
+__pycache__/
+
+# Ansible
+*.retry
+.cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+.claude/
+
+# Cache Ansible local (collections/roles Galaxy)
+ansible/.ansible/
+
+# Sujets PDF (référence locale, non versionnés)
+*.pdf
+
+# Notes de travail locales
+*.local.md
