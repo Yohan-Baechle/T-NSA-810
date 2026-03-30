@@ -1,0 +1,13 @@
+---
+# Ansible-lint configuration
+# Run: ansible-lint -c .ansible-lint
+
+profile: production
+
+exclude_paths:
+  - .cache/
+
+skip_list: []
+
+warn_list:
+  - no-changed-when
