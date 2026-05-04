@@ -1,0 +1,60 @@
+---
+- name: Create Ansible temp directory for root
+  ansible.builtin.file:
+    path: /root/.ansible/tmp
+    state: directory
+    mode: "0700"
+    owner: root
+    group: root
+  tags: [common, setup]
+
+- name: Force apt to use IPv4
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/99force-ipv4
+    content: 'Acquire::ForceIPv4 "true";'
+    mode: "0644"
+  tags: [common, packages]
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  tags: [common, packages]
+
+- name: Install common packages
+  ansible.builtin.apt:
+    name: "{{ common_packages }}"
+    state: present
+  tags: [common, packages]
+
+- name: Set timezone
+  community.general.timezone:
+    name: "{{ common_ntp_timezone }}"
+  tags: [common, ntp]
+
+- name: Harden SSH configuration
+  ansible.builtin.template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    mode: "0644"
+    validate: "sshd -t -f %s"
+  notify: Restart sshd
+  when: not (bastion_manages_sshd | default(false))
+  tags: [common, ssh]
+
+- name: Enable unattended-upgrades for security updates
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+    mode: "0644"
+  tags: [common, security]
+
+- name: Deploy clean netplan configuration
+  ansible.builtin.template:
+    src: 50-cloud-init.yaml.j2
+    dest: /etc/netplan/50-cloud-init.yaml
+    mode: "0600"
+  notify: Apply netplan
+  tags: [common, network]

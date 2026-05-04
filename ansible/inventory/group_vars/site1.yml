@@ -1,0 +1,6 @@
+---
+# Site 1 (on-prem) - supernet 10.10.0.0/16
+site_name: site1
+site_supernet: "{{ sites.site1.supernet }}"
+site_domain: "{{ dns_domain_site1 }}"
+site_dns: "10.10.0.1"   # interface Admin du pfSense S1 (resolver + forwarding)

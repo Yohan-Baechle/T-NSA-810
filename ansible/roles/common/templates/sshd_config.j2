@@ -1,0 +1,28 @@
+Port {{ common_ssh_port }}
+AddressFamily inet
+ListenAddress 0.0.0.0
+
+# Authentication
+PermitRootLogin {{ common_ssh_permit_root_login }}
+MaxAuthTries {{ common_ssh_max_auth_tries }}
+PubkeyAuthentication yes
+PasswordAuthentication {{ common_ssh_password_authentication }}
+PermitEmptyPasswords no
+KbdInteractiveAuthentication no
+UsePAM yes
+
+# Session
+ClientAliveInterval 300
+ClientAliveCountMax 2
+LoginGraceTime 60
+
+# Logging
+SyslogFacility AUTH
+LogLevel INFO
+
+# Forwarding
+AllowTcpForwarding {{ common_ssh_allow_tcp_forwarding }}
+X11Forwarding no
+
+# SFTP
+Subsystem sftp /usr/lib/openssh/sftp-server

@@ -1,0 +1,6 @@
+---
+# Site 2 (distant) - supernet 10.20.0.0/16
+site_name: site2
+site_supernet: "{{ sites.site2.supernet }}"
+site_domain: "{{ dns_domain_site2 }}"
+site_dns: "10.20.0.1"   # interface Admin du pfSense S2 (resolver + forwarding)

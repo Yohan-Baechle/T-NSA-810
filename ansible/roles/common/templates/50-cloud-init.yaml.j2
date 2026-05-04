@@ -1,0 +1,17 @@
+network:
+  version: 2
+  ethernets:
+    {{ common_network_interface }}:
+      dhcp4: false
+      dhcp6: false
+      addresses:
+        - "{{ host_lan_ip | default(ansible_host) }}/{{ host_prefix | default(24) }}"
+      nameservers:
+        addresses:
+          - "{{ site_dns }}"
+        search:
+          - "{{ dns_domain_site1 }}"
+          - "{{ dns_domain_site2 }}"
+      routes:
+        - to: "default"
+          via: "{{ host_gateway }}"

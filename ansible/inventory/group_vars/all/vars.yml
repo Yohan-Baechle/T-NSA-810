@@ -1,0 +1,31 @@
+---
+# Variables communes à toutes les VMs
+
+ansible_python_interpreter: /usr/bin/python3
+ansible_become_password: "{{ vault_become_password }}"
+
+# Rebond SSH via le bastion (host "cia-bastion" défini dans ~/.ssh/config).
+ansible_ssh_common_args: -o ProxyJump=cia-bastion -o StrictHostKeyChecking=no
+
+# Plan d'adressage : un LAN /24 par site, sur le supernet /16 réservé au site.
+# Gateway pfSense = .1, services à partir de .10. Séparation des zones par
+# règles pfSense (un seul bridge LAN par site).
+sites:
+  site1:
+    supernet: "10.10.0.0/16"
+    lan: "10.10.0.0/24"
+  site2:
+    supernet: "10.20.0.0/16"
+    lan: "10.20.0.0/24"
+
+# Tunnel VPN OpenVPN site-to-site
+vpn_tunnel_network: "10.0.0.0/30"
+vpn_tunnel_s1: "10.0.0.1"
+vpn_tunnel_s2: "10.0.0.2"
+
+# Domaines internes en .lan (et non .local, réservé au mDNS - non forwardable).
+dns_domain_site1: site1.lan
+dns_domain_site2: site2.lan
+
+# NTP
+common_ntp_timezone: Europe/Paris
