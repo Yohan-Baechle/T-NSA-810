@@ -1,0 +1,22 @@
+[Unit]
+Description=NetBox WSGI Service
+Documentation=https://docs.netbox.dev/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=netbox_svc
+Group=netbox_svc
+WorkingDirectory={{ netbox_path }}/netbox
+ExecStart={{ netbox_path }}/venv/bin/gunicorn \
+    --bind 127.0.0.1:{{ netbox_port }} \
+    --workers 2 \
+    --threads 2 \
+    --timeout 120 \
+    netbox.wsgi
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,18 @@
+---
+netbox_version: "4.2.3"
+netbox_path: /opt/netbox
+netbox_db_name: netbox
+netbox_db_user: netbox
+netbox_db_password: "{{ vault_netbox_db_password }}"
+netbox_secret_key: "{{ vault_netbox_secret_key }}"
+netbox_port: 8001
+netbox_allowed_hosts:
+  - "{{ ansible_host }}"
+  - "netbox-s1.{{ dns_domain_site1 }}"
+  - "localhost"
+netbox_csrf_trusted_origins:
+  - "http://{{ ansible_host }}"
+  - "https://{{ ansible_host }}"
+netbox_admin_user: admin
+netbox_admin_email: "admin@{{ site_domain | default(dns_domain_site1) }}"
+netbox_admin_password: "{{ vault_netbox_admin_password }}"
