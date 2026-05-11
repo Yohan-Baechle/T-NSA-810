@@ -1,0 +1,24 @@
+---
+# Le bastion gère lui-même sshd (config dédiée du rôle bastion) : le rôle common
+# ne doit pas écraser cette config dans les plays qui ciblent "all".
+bastion_manages_sshd: true
+
+bastion_allowed_users:
+  - netbox
+  - elastic
+  - web
+  - bastion
+
+# Seule porte d'entrée externe du site : joint en direct (pas de rebond sur
+# lui-même). On neutralise donc le ProxyJump hérité de group_vars/all.
+ansible_ssh_common_args: -o StrictHostKeyChecking=no
+
+host_zone: admin             # étiquette logique (séparation par règles pfSense)
+host_prefix: 24
+host_gateway: "10.20.0.1"
+# ansible_host est l'IP publique (accès SSH) ; l'IP à poser sur le LAN diffère.
+host_lan_ip: "10.20.0.10"
+
+# Le bastion DOIT autoriser le forwarding SSH (rebond vers les VM internes),
+# y compris quand le rôle common lui applique son sshd durci.
+common_ssh_allow_tcp_forwarding: "yes"

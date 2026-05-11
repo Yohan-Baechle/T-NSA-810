@@ -1,0 +1,8 @@
+---
+bastion_allowed_users:
+  - netbox
+  - elastic
+  - web
+  - bastion
+bastion_ssh_port: 22
+bastion_manages_sshd: true

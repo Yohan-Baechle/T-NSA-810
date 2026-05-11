@@ -1,0 +1,8 @@
+---
+# Usage: ansible-playbook playbooks/bastion.yml --ask-vault-pass
+# Le rôle common est appliqué automatiquement via la dépendance meta.
+
+- name: Configure Bastion SSH
+  hosts: bastion-s2
+  roles:
+    - bastion
