@@ -1,0 +1,8 @@
+---
+# Usage: ansible-playbook playbooks/netbox.yml --ask-vault-pass
+# Le rôle common est appliqué automatiquement via la dépendance meta.
+
+- name: Deploy NetBox (IPAM)
+  hosts: netbox-s1
+  roles:
+    - netbox

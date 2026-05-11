@@ -1,0 +1,38 @@
+ALLOWED_HOSTS = [
+{% for host in netbox_allowed_hosts %}
+    '{{ host }}',
+{% endfor %}
+]
+
+DATABASE = {
+    'NAME': '{{ netbox_db_name }}',
+    'USER': '{{ netbox_db_user }}',
+    'PASSWORD': '{{ netbox_db_password }}',
+    'HOST': 'localhost',
+    'PORT': '',
+    'CONN_MAX_AGE': 300,
+}
+
+REDIS = {
+    'tasks': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DATABASE': 0,
+        'SSL': False,
+    },
+    'caching': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DATABASE': 1,
+        'SSL': False,
+    },
+}
+
+SECRET_KEY = '{{ netbox_secret_key }}'
+TIME_ZONE = '{{ common_ntp_timezone }}'
+
+CSRF_TRUSTED_ORIGINS = [
+{% for origin in netbox_csrf_trusted_origins %}
+    '{{ origin }}',
+{% endfor %}
+]

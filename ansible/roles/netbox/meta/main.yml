@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  role_name: netbox
+  author: CIA Team
+  description: NetBox IPAM - PostgreSQL, Redis, Nginx reverse proxy
+  license: MIT
+  min_ansible_version: "2.16"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - noble
+dependencies:
+  - role: common
+allow_duplicates: false

@@ -1,0 +1,204 @@
+---
+- name: Create netbox system user
+  ansible.builtin.user:
+    name: netbox_svc
+    system: true
+    home: "{{ netbox_path }}"
+    shell: /usr/sbin/nologin
+    create_home: false
+  tags: [netbox, setup]
+
+- name: Install NetBox dependencies
+  ansible.builtin.apt:
+    name:
+      - python3
+      - python3-pip
+      - python3-venv
+      - python3-dev
+      - postgresql
+      - libpq-dev
+      - python3-psycopg2
+      - redis-server
+      - nginx
+      - git
+    state: present
+  tags: [netbox, packages]
+
+- name: Start and enable PostgreSQL
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: true
+  tags: [netbox, postgresql]
+
+- name: Start and enable Redis
+  ansible.builtin.service:
+    name: redis-server
+    state: started
+    enabled: true
+  tags: [netbox, redis]
+
+- name: Create PostgreSQL database
+  become: true
+  become_user: postgres
+  community.postgresql.postgresql_db:
+    name: "{{ netbox_db_name }}"
+    encoding: UTF-8
+  tags: [netbox, postgresql]
+
+- name: Create PostgreSQL user
+  become: true
+  become_user: postgres
+  community.postgresql.postgresql_user:
+    name: "{{ netbox_db_user }}"
+    password: "{{ netbox_db_password }}"
+  no_log: true
+  tags: [netbox, postgresql]
+
+- name: Grant all privileges on NetBox database
+  become: true
+  become_user: postgres
+  community.postgresql.postgresql_privs:
+    database: "{{ netbox_db_name }}"
+    roles: "{{ netbox_db_user }}"
+    type: database
+    privs: ALL
+  tags: [netbox, postgresql]
+
+- name: Grant schema public ownership to NetBox user
+  become: true
+  become_user: postgres
+  community.postgresql.postgresql_query:
+    db: "{{ netbox_db_name }}"
+    query: "ALTER SCHEMA public OWNER TO {{ netbox_db_user }};"
+  changed_when: false
+  tags: [netbox, postgresql]
+
+- name: Check if NetBox is already cloned
+  ansible.builtin.stat:
+    path: "{{ netbox_path }}/netbox/netbox/settings.py"
+  register: netbox_installed
+  tags: [netbox, deploy]
+
+- name: Mark NetBox directory as safe for git
+  community.general.git_config:
+    name: safe.directory
+    value: "{{ netbox_path }}"
+    scope: global
+    add_mode: add
+  tags: [netbox, deploy]
+
+- name: Clone NetBox
+  ansible.builtin.git:
+    repo: https://github.com/netbox-community/netbox.git
+    dest: "{{ netbox_path }}"
+    version: "v{{ netbox_version }}"
+    depth: 1
+  when: not netbox_installed.stat.exists
+  tags: [netbox, deploy]
+
+- name: Set ownership of NetBox directory
+  ansible.builtin.file:
+    path: "{{ netbox_path }}"
+    owner: netbox_svc
+    group: netbox_svc
+    recurse: true
+  when: not netbox_installed.stat.exists
+  tags: [netbox, deploy]
+
+- name: Deploy NetBox configuration
+  ansible.builtin.template:
+    src: configuration.py.j2
+    dest: "{{ netbox_path }}/netbox/netbox/configuration.py"
+    owner: netbox_svc
+    group: netbox_svc
+    mode: "0640"
+  notify: Restart netbox
+  no_log: true
+  tags: [netbox, config]
+
+- name: Run NetBox upgrade script
+  ansible.builtin.command: "{{ netbox_path }}/upgrade.sh"
+  args:
+    chdir: "{{ netbox_path }}"
+  register: netbox_upgrade_result
+  changed_when: "'Applying' in netbox_upgrade_result.stdout"
+  tags: [netbox, deploy]
+
+- name: Collect static files
+  ansible.builtin.command: "{{ netbox_path }}/venv/bin/python {{ netbox_path }}/netbox/manage.py collectstatic --no-input"
+  args:
+    chdir: "{{ netbox_path }}/netbox"
+  changed_when: false
+  tags: [netbox, deploy]
+
+- name: Create NetBox superuser
+  ansible.builtin.command: >
+    {{ netbox_path }}/venv/bin/python {{ netbox_path }}/netbox/manage.py
+    createsuperuser --no-input
+    --username {{ netbox_admin_user }}
+    --email {{ netbox_admin_email }}
+  environment:
+    DJANGO_SUPERUSER_PASSWORD: "{{ netbox_admin_password }}"
+  register: netbox_superuser_result
+  changed_when: "'Superuser created' in netbox_superuser_result.stdout"
+  failed_when: false
+  no_log: true
+  tags: [netbox, deploy]
+
+- name: Deploy NetBox systemd service
+  ansible.builtin.template:
+    src: netbox.service.j2
+    dest: /etc/systemd/system/netbox.service
+    mode: "0644"
+  notify: Restart netbox
+  tags: [netbox, service]
+
+- name: Deploy NetBox RQ systemd service
+  ansible.builtin.template:
+    src: netbox-rq.service.j2
+    dest: /etc/systemd/system/netbox-rq.service
+    mode: "0644"
+  notify: Restart netbox-rq
+  tags: [netbox, service]
+
+- name: Enable and start NetBox services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+    daemon_reload: true
+  loop:
+    - netbox
+    - netbox-rq
+  tags: [netbox, service]
+
+- name: Deploy Nginx config for NetBox
+  ansible.builtin.template:
+    src: nginx-netbox.conf.j2
+    dest: /etc/nginx/sites-available/netbox
+    mode: "0644"
+  notify: Reload nginx
+  tags: [netbox, nginx]
+
+- name: Enable Nginx site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/netbox
+    dest: /etc/nginx/sites-enabled/netbox
+    state: link
+  notify: Reload nginx
+  tags: [netbox, nginx]
+
+- name: Remove default Nginx site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload nginx
+  tags: [netbox, nginx]
+
+- name: Enable and start Nginx
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+  tags: [netbox, nginx]

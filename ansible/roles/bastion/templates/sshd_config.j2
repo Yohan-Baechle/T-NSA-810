@@ -1,0 +1,35 @@
+Port {{ bastion_ssh_port }}
+AddressFamily inet
+ListenAddress 0.0.0.0
+
+# Authentication
+PermitRootLogin no
+MaxAuthTries 3
+PubkeyAuthentication yes
+PasswordAuthentication no
+PermitEmptyPasswords no
+KbdInteractiveAuthentication no
+UsePAM yes
+
+# Allowed users
+AllowUsers {{ bastion_allowed_users | join(' ') }}
+
+# Session
+ClientAliveInterval 300
+ClientAliveCountMax 2
+LoginGraceTime 30
+
+# Logging
+SyslogFacility AUTH
+LogLevel VERBOSE
+
+# Forwarding
+AllowTcpForwarding yes
+GatewayPorts no
+X11Forwarding no
+
+# SFTP
+Subsystem sftp /usr/lib/openssh/sftp-server
+
+# Banner
+Banner /etc/ssh/banner

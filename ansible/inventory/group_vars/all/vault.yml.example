@@ -1,0 +1,26 @@
+---
+# Template des secrets Ansible Vault
+# Copier ce fichier vers vault.yml puis chiffrer :
+#   cp vault.yml.example vault.yml
+#   ansible-vault encrypt vault.yml
+#
+# Déchiffrer pour éditer :
+#   ansible-vault edit vault.yml
+
+# Mot de passe sudo des VMs (identique sur toutes les VMs)
+vault_become_password: "CHANGEME"
+
+# NetBox - base de données
+vault_netbox_db_password: "CHANGEME"
+
+# NetBox - clé secrète Django (générer avec : python3 -c "import secrets; print(secrets.token_urlsafe(50))")
+vault_netbox_secret_key: "CHANGEME"
+
+# NetBox - mot de passe admin web
+vault_netbox_admin_password: "CHANGEME"
+
+# NetBox - token API pour l'automatisation (40 caractères hex)
+vault_netbox_api_token: "CHANGEME"
+
+# Elasticsearch (réservé pour usage futur avec xpack.security)
+vault_elastic_password: "CHANGEME"

@@ -1,0 +1,10 @@
+---
+# Secrets dans le vault : vault_netbox_db_password, vault_netbox_secret_key
+host_zone: services          # étiquette logique (séparation par règles pfSense)
+host_prefix: 24
+host_gateway: "10.10.0.1"
+host_lan_ip: "10.10.0.10"
+
+# Collecteur syslog des pfSense : netbox-s1 reçoit les logs des deux pfSense
+# (Remote Syslog UDP/514) et les pousse dans Elasticsearch (index pfsense-*).
+filebeat_syslog_collector: true
