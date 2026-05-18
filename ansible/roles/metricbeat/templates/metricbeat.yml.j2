@@ -1,0 +1,38 @@
+# Metricbeat configuration - managed by Ansible
+# Métriques système -> Elasticsearch (index metricbeat-<site>-<date>).
+
+metricbeat.modules:
+  - module: system
+    period: {{ metricbeat_period }}
+    metricsets:
+{% for ms in metricbeat_system_metricsets %}
+      - {{ ms }}
+{% endfor %}
+    processes: ['.*']
+    cpu.metrics: [percentages, normalized_percentages]
+    core.metrics: [percentages]
+
+# Champs ajoutés à chaque métrique pour filtrer par site/hôte (cohérent avec Filebeat).
+fields:
+  site: {{ site_name }}
+  hostname: {{ inventory_hostname }}
+fields_under_root: true
+
+output.elasticsearch:
+  hosts:
+    - "http://{{ metricbeat_elasticsearch_host }}:{{ metricbeat_elasticsearch_port }}"
+  index: "metricbeat-%{[site]}-%{+yyyy.MM.dd}"
+
+setup.ilm.enabled: false
+setup.template.name: "metricbeat"
+setup.template.pattern: "metricbeat-*"
+
+processors:
+  - add_host_metadata: ~
+
+logging.level: warning
+logging.to_files: true
+logging.files:
+  path: /var/log/metricbeat
+  name: metricbeat
+  keepfiles: 3

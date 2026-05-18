@@ -1,0 +1,13 @@
+---
+galaxy_info:
+  role_name: metricbeat
+  author: CIA Team
+  description: Metricbeat - system metrics shipping to Elasticsearch
+  license: MIT
+  min_ansible_version: "2.16"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - noble
+dependencies: []
+allow_duplicates: false

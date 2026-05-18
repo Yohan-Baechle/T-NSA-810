@@ -1,0 +1,8 @@
+---
+# Usage: ansible-playbook playbooks/metricbeat.yml --ask-vault-pass
+# Déploie Metricbeat (métriques système) sur toutes les VM -> Elasticsearch.
+
+- name: Deploy Metricbeat system metrics
+  hosts: all
+  roles:
+    - metricbeat
