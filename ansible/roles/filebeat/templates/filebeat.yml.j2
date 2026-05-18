@@ -1,0 +1,55 @@
+# Filebeat configuration - managed by Ansible
+
+filebeat.inputs:
+{% for input in filebeat_log_inputs %}
+  - type: filestream
+    id: {{ input.type }}-{{ inventory_hostname }}
+    enabled: true
+    paths:
+{% for path in input.paths %}
+      - {{ path }}
+{% endfor %}
+    fields:
+      log_type: {{ input.type }}
+      hostname: {{ inventory_hostname }}
+      site: {{ site_name }}
+    fields_under_root: true
+{% endfor %}
+{% if filebeat_syslog_collector | default(false) %}
+
+  # Collecteur syslog réseau : reçoit les logs des pfSense (Remote Syslog).
+  # pfSense n'est pas géré par Ansible (FreeBSD) ; il pousse ses logs ici en UDP.
+  - type: syslog
+    enabled: true
+    format: auto
+    protocol.udp:
+      host: "0.0.0.0:{{ filebeat_syslog_port }}"
+    fields:
+      log_type: pfsense
+      site: network
+    fields_under_root: true
+{% endif %}
+
+output.elasticsearch:
+  hosts:
+    - "http://{{ filebeat_elasticsearch_host }}:{{ filebeat_elasticsearch_port }}"
+  indices:
+    - index: "pfsense-%{+yyyy.MM.dd}"
+      when.equals:
+        log_type: "pfsense"
+  index: "filebeat-%{[site]}-%{+yyyy.MM.dd}"
+
+setup.ilm.enabled: false
+setup.template.name: "filebeat"
+setup.template.pattern: "filebeat-*"
+
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
+
+logging.level: warning
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 3
