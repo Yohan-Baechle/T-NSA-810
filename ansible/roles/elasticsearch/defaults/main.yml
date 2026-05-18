@@ -1,0 +1,7 @@
+---
+elasticsearch_version: "8.x"
+elasticsearch_heap_size: "512m"                  # max 50% de la RAM de la VM
+elasticsearch_cluster_name: cia-logging
+elasticsearch_node_name: "{{ inventory_hostname }}"
+elasticsearch_network_host: "{{ ansible_host }}"  # Écoute uniquement sur l'IP LAN de la VM
+elasticsearch_http_port: 9200

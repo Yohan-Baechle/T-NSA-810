@@ -1,0 +1,7 @@
+---
+elasticsearch_heap_size: "512m"
+
+host_zone: services          # étiquette logique (séparation par règles pfSense)
+host_prefix: 24
+host_gateway: "10.10.0.1"
+host_lan_ip: "10.10.0.20"
