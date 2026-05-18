@@ -1,0 +1,85 @@
+---
+- name: Install required packages
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - gpg
+    state: present
+  tags: [elasticsearch, packages]
+
+- name: Check if Elasticsearch GPG keyring exists
+  ansible.builtin.stat:
+    path: /usr/share/keyrings/elasticsearch-keyring.gpg
+  register: elasticsearch_keyring
+  tags: [elasticsearch, packages]
+
+- name: Download Elasticsearch GPG key
+  ansible.builtin.get_url:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    dest: /tmp/elasticsearch-gpg-key.asc
+    mode: "0644"
+  when: not elasticsearch_keyring.stat.exists
+  tags: [elasticsearch, packages]
+
+- name: Dearmor Elasticsearch GPG key
+  ansible.builtin.command:
+    cmd: gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg /tmp/elasticsearch-gpg-key.asc
+    creates: /usr/share/keyrings/elasticsearch-keyring.gpg
+  when: not elasticsearch_keyring.stat.exists
+  tags: [elasticsearch, packages]
+
+- name: Clean up GPG key temp file
+  ansible.builtin.file:
+    path: /tmp/elasticsearch-gpg-key.asc
+    state: absent
+  tags: [elasticsearch, packages]
+
+- name: Add Elasticsearch repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main"
+    filename: elastic-8.x
+    state: present
+  tags: [elasticsearch, packages]
+
+- name: Install Elasticsearch
+  ansible.builtin.apt:
+    name: elasticsearch
+    state: present
+    update_cache: true
+  tags: [elasticsearch, packages]
+
+- name: Configure Elasticsearch
+  ansible.builtin.template:
+    src: elasticsearch.yml.j2
+    dest: /etc/elasticsearch/elasticsearch.yml
+    mode: "0660"
+    group: elasticsearch
+  notify: Restart elasticsearch
+  tags: [elasticsearch, config]
+
+- name: Configure JVM heap size
+  ansible.builtin.template:
+    src: jvm.options.j2
+    dest: /etc/elasticsearch/jvm.options.d/heap.options
+    mode: "0644"
+  notify: Restart elasticsearch
+  tags: [elasticsearch, config]
+
+- name: Enable and start Elasticsearch
+  ansible.builtin.systemd:
+    name: elasticsearch
+    enabled: true
+    state: started
+    daemon_reload: true
+  tags: [elasticsearch, service]
+
+- name: Wait for Elasticsearch to be ready
+  ansible.builtin.uri:
+    url: "http://{{ elasticsearch_network_host }}:{{ elasticsearch_http_port }}"
+    method: GET
+    status_code: 200
+  register: elasticsearch_health
+  retries: 12
+  delay: 10
+  until: elasticsearch_health.status == 200
+  tags: [elasticsearch, service]

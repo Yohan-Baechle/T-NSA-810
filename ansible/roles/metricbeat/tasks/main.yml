@@ -1,0 +1,61 @@
+---
+# Installe Metricbeat (dépôt Elastic 8.x déjà ajouté par le rôle filebeat,
+# mais on le re-déclare ici pour que le rôle soit autonome) et le configure
+# pour pousser les métriques système vers Elasticsearch.
+
+- name: Check if Elasticsearch GPG keyring exists
+  ansible.builtin.stat:
+    path: /usr/share/keyrings/elasticsearch-keyring.gpg
+  register: metricbeat_keyring
+  tags: [metricbeat, packages]
+
+- name: Download Elasticsearch GPG key
+  ansible.builtin.get_url:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    dest: /tmp/elasticsearch-gpg-key.asc
+    mode: "0644"
+  when: not metricbeat_keyring.stat.exists
+  tags: [metricbeat, packages]
+
+- name: Dearmor Elasticsearch GPG key
+  ansible.builtin.command:
+    cmd: gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg /tmp/elasticsearch-gpg-key.asc
+    creates: /usr/share/keyrings/elasticsearch-keyring.gpg
+  when: not metricbeat_keyring.stat.exists
+  tags: [metricbeat, packages]
+
+- name: Clean up GPG key temp file
+  ansible.builtin.file:
+    path: /tmp/elasticsearch-gpg-key.asc
+    state: absent
+  tags: [metricbeat, packages]
+
+- name: Add Elastic repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main"
+    filename: elastic-8.x
+    state: present
+  tags: [metricbeat, packages]
+
+- name: Install Metricbeat
+  ansible.builtin.apt:
+    name: metricbeat
+    state: present
+    update_cache: true
+  tags: [metricbeat, packages]
+
+- name: Deploy Metricbeat configuration
+  ansible.builtin.template:
+    src: metricbeat.yml.j2
+    dest: /etc/metricbeat/metricbeat.yml
+    mode: "0600"
+  notify: Restart metricbeat
+  tags: [metricbeat, config]
+
+- name: Enable and start Metricbeat
+  ansible.builtin.systemd:
+    name: metricbeat
+    enabled: true
+    state: started
+    daemon_reload: true
+  tags: [metricbeat, service]

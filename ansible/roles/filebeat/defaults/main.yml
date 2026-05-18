@@ -1,0 +1,20 @@
+---
+filebeat_elasticsearch_host: "{{ hostvars['elastic-s1'].ansible_host }}"
+filebeat_elasticsearch_port: 9200
+
+# Collecteur syslog pour les pfSense (désactivé par défaut ; activé sur 1 VM via
+# host_vars). Quand activé, Filebeat écoute en UDP et route les logs pfSense vers
+# l'index dédié "pfsense-<date>". Les pfSense sont configurés en Remote Syslog
+# vers cette VM (cf. docs/pfsense-setup.md).
+filebeat_syslog_collector: false
+filebeat_syslog_port: 514
+
+filebeat_log_inputs:
+  - type: syslog
+    paths:
+      - /var/log/syslog
+      - /var/log/auth.log
+  - type: application
+    paths:
+      - /var/log/nginx/*.log
+      - /var/log/fail2ban.log

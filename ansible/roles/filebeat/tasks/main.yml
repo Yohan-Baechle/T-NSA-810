@@ -1,0 +1,57 @@
+---
+- name: Check if Filebeat GPG keyring exists
+  ansible.builtin.stat:
+    path: /usr/share/keyrings/elasticsearch-keyring.gpg
+  register: filebeat_keyring
+  tags: [filebeat, packages]
+
+- name: Download Elasticsearch GPG key
+  ansible.builtin.get_url:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    dest: /tmp/elasticsearch-gpg-key.asc
+    mode: "0644"
+  when: not filebeat_keyring.stat.exists
+  tags: [filebeat, packages]
+
+- name: Dearmor Elasticsearch GPG key
+  ansible.builtin.command:
+    cmd: gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg /tmp/elasticsearch-gpg-key.asc
+    creates: /usr/share/keyrings/elasticsearch-keyring.gpg
+  when: not filebeat_keyring.stat.exists
+  tags: [filebeat, packages]
+
+- name: Clean up GPG key temp file
+  ansible.builtin.file:
+    path: /tmp/elasticsearch-gpg-key.asc
+    state: absent
+  tags: [filebeat, packages]
+
+- name: Add Elastic repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main"
+    filename: elastic-8.x
+    state: present
+  tags: [filebeat, packages]
+
+- name: Install Filebeat
+  ansible.builtin.apt:
+    name: filebeat
+    state: present
+    update_cache: true
+  tags: [filebeat, packages]
+
+- name: Deploy Filebeat configuration
+  ansible.builtin.template:
+    src: filebeat.yml.j2
+    dest: /etc/filebeat/filebeat.yml
+    mode: "0600"
+  notify: Restart filebeat
+  tags: [filebeat, config]
+
+- name: Enable and start Filebeat
+  ansible.builtin.systemd:
+    name: filebeat
+    enabled: true
+    state: started
+    daemon_reload: true
+  tags: [filebeat, service]

@@ -1,0 +1,21 @@
+---
+# Métriques système collectées par Metricbeat et envoyées à Elasticsearch.
+# Léger (~100 Mio) : seuls les modules système sont activés.
+metricbeat_elasticsearch_host: "{{ hostvars['elastic-s1'].ansible_host }}"
+metricbeat_elasticsearch_port: 9200
+
+# Fréquence de collecte (10s = bon compromis charge / granularité).
+metricbeat_period: "10s"
+
+# Métriques système exposées (CPU, mémoire, charge, réseau, disque, FS, processus).
+metricbeat_system_metricsets:
+  - cpu
+  - load
+  - memory
+  - network
+  - process
+  - process_summary
+  - uptime
+  - filesystem
+  - fsstat
+  - diskio

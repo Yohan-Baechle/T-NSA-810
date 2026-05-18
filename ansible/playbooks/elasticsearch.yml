@@ -1,0 +1,8 @@
+---
+# Usage: ansible-playbook playbooks/elasticsearch.yml --ask-vault-pass
+# Le rôle common est appliqué automatiquement via la dépendance meta.
+
+- name: Deploy Elasticsearch
+  hosts: elastic-s1
+  roles:
+    - elasticsearch

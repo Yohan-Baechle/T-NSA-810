@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  role_name: filebeat
+  author: CIA Team
+  description: Filebeat - log shipping to Elasticsearch
+  license: MIT
+  min_ansible_version: "2.16"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - noble
+dependencies:
+  - role: common
+allow_duplicates: false

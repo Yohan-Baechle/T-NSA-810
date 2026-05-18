@@ -1,0 +1,5 @@
+---
+- name: Restart metricbeat
+  ansible.builtin.systemd:
+    name: metricbeat
+    state: restarted
