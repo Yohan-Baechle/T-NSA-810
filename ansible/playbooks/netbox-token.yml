@@ -1,0 +1,44 @@
+---
+# Crée le token API NetBox pour l'automatisation
+# Usage: ansible-playbook playbooks/netbox-token.yml --ask-vault-pass
+
+- name: Create NetBox API token
+  hosts: netbox-s1
+  vars:
+    netbox_path: /opt/netbox
+  tasks:
+    - name: Deploy token creation script
+      ansible.builtin.copy:
+        dest: "{{ netbox_path }}/create_token.py"
+        content: |
+          import os, sys
+          sys.path.insert(0, '{{ netbox_path }}/netbox')
+          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'netbox.settings')
+          import django
+          django.setup()
+          from users.models import Token, User
+          u = User.objects.get(username='admin')
+          token_key = os.environ['NETBOX_API_TOKEN']
+          t, created = Token.objects.get_or_create(user=u, defaults={'key': token_key})
+          print('CREATED ' + t.key if created else 'EXISTS ' + t.key)
+        mode: "0600"
+        owner: root
+        group: root
+      no_log: true
+
+    - name: Create API token for admin user
+      ansible.builtin.command: "{{ netbox_path }}/venv/bin/python {{ netbox_path }}/create_token.py"
+      environment:
+        NETBOX_API_TOKEN: "{{ vault_netbox_api_token }}"
+      register: token_result
+      changed_when: "'CREATED' in token_result.stdout"
+      no_log: true
+
+    - name: Remove token creation script
+      ansible.builtin.file:
+        path: "{{ netbox_path }}/create_token.py"
+        state: absent
+
+    - name: Display token status
+      ansible.builtin.debug:
+        msg: "{{ 'Token created' if 'CREATED' in token_result.stdout else 'Token already exists' }}"

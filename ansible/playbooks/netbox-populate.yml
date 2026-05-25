@@ -1,0 +1,161 @@
+---
+# Peuple NetBox avec les données de l'infrastructure.
+# Tourne sur netbox-s1 et joint l'API en localhost (aucun tunnel requis).
+# Usage:
+#   1. Créer le token API : ansible-playbook playbooks/netbox-token.yml --ask-vault-pass
+#   2. Peupler            : ansible-playbook playbooks/netbox-populate.yml --ask-vault-pass
+
+- name: Populate NetBox with infrastructure data
+  hosts: netbox-s1
+  gather_facts: false
+  become: true
+
+  # Token commun à toutes les tâches netbox.
+  module_defaults:
+    group/netbox.netbox.netbox:
+      netbox_url: "http://localhost"
+      netbox_token: "{{ vault_netbox_api_token }}"
+
+  vars:
+    netbox_sites:
+      - name: Site1
+        slug: site1
+        description: "On-prem site - supernet 10.10.0.0/16"
+      - name: Site2
+        slug: site2
+        description: "Remote site - supernet 10.20.0.0/16"
+
+    prefixes:
+      - prefix: "10.10.0.0/24"
+        site: Site1
+        description: "LAN Site 1 (NetBox, Elasticsearch)"
+      - prefix: "10.20.0.0/24"
+        site: Site2
+        description: "LAN Site 2 (Bastion, Web)"
+      - prefix: "10.0.0.0/30"
+        description: "VPN Tunnel inter-sites"
+
+    devices:
+      - name: pf1-s1
+        site: Site1
+        role: Firewall
+        ip: "10.10.0.1/24"
+        description: "pfSense Site 1"
+      - name: pf2-s2
+        site: Site2
+        role: Firewall
+        ip: "10.20.0.1/24"
+        description: "pfSense Site 2"
+      - name: netbox-s1
+        site: Site1
+        role: Server
+        ip: "{{ hostvars['netbox-s1'].host_lan_ip | default(hostvars['netbox-s1'].ansible_host) }}/24"
+        description: "NetBox IPAM"
+      - name: elastic-s1
+        site: Site1
+        role: Server
+        ip: "{{ hostvars['elastic-s1'].host_lan_ip | default(hostvars['elastic-s1'].ansible_host) }}/24"
+        description: "Elasticsearch"
+      - name: bastion-s2
+        site: Site2
+        role: Server
+        ip: "{{ hostvars['bastion-s2'].host_lan_ip | default(hostvars['bastion-s2'].ansible_host) }}/24"
+        description: "Bastion SSH"
+      - name: web-s2
+        site: Site2
+        role: Server
+        ip: "{{ hostvars['web-s2'].host_lan_ip | default(hostvars['web-s2'].ansible_host) }}/24"
+        description: "Web server Nginx"
+
+  pre_tasks:
+    # Requis par les modules netbox.netbox.
+    - name: Ensure pynetbox is installed
+      ansible.builtin.pip:
+        name: pynetbox
+        extra_args: --break-system-packages
+      tags: [netbox, populate]
+
+  tasks:
+    - name: Create sites
+      netbox.netbox.netbox_site:
+        data:
+          name: "{{ item.name }}"
+          slug: "{{ item.slug }}"
+          description: "{{ item.description }}"
+        state: present
+      loop: "{{ netbox_sites }}"
+      loop_control:
+        label: "{{ item.name }}"
+      tags: [netbox, populate]
+
+    - name: Create manufacturer
+      netbox.netbox.netbox_manufacturer:
+        data:
+          name: Generic
+          slug: generic
+        state: present
+      tags: [netbox, populate]
+
+    - name: Create device type
+      netbox.netbox.netbox_device_type:
+        data:
+          manufacturer: Generic
+          model: VM
+          slug: vm
+        state: present
+      tags: [netbox, populate]
+
+    - name: Create device roles
+      netbox.netbox.netbox_device_role:
+        data:
+          name: "{{ item.name }}"
+          slug: "{{ item.slug }}"
+          color: "{{ item.color }}"
+        state: present
+      loop:
+        - {name: Server, slug: server, color: "0000ff"}
+        - {name: Firewall, slug: firewall, color: "ff0000"}
+      loop_control:
+        label: "{{ item.name }}"
+      tags: [netbox, populate]
+
+    - name: Create prefixes
+      netbox.netbox.netbox_prefix:
+        data:
+          prefix: "{{ item.prefix }}"
+          description: "{{ item.description }}"
+        state: present
+      loop: "{{ prefixes }}"
+      loop_control:
+        label: "{{ item.prefix }}"
+      tags: [netbox, populate]
+
+    - name: Create devices
+      netbox.netbox.netbox_device:
+        data:
+          name: "{{ item.name }}"
+          site: "{{ item.site }}"
+          device_role: "{{ item.role }}"
+          device_type: VM
+          description: "{{ item.description }}"
+        state: present
+      loop: "{{ devices }}"
+      loop_control:
+        label: "{{ item.name }}"
+      tags: [netbox, populate]
+
+    - name: Create IP addresses
+      netbox.netbox.netbox_ip_address:
+        data:
+          address: "{{ item.ip }}"
+          description: "{{ item.name }}"
+        state: present
+      loop: "{{ devices }}"
+      loop_control:
+        label: "{{ item.name }}"
+      tags: [netbox, populate]
+
+    - name: Population complete
+      ansible.builtin.debug:
+        msg: "NetBox populated with {{ netbox_sites | length }} sites, {{ prefixes | length }} prefixes, {{ devices | length }} devices."
+      tags: [netbox, populate]
