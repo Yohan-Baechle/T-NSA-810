@@ -1,0 +1,7 @@
+---
+# Web interne : joignable depuis l'interne uniquement, et ne peut pas initier
+# de flux vers les autres hôtes (règles appliquées sur pfSense S2).
+host_zone: dmz               # étiquette logique (séparation par règles pfSense)
+host_prefix: 24
+host_gateway: "10.20.0.1"
+host_lan_ip: "10.20.0.20"
