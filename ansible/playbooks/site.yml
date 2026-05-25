@@ -1,0 +1,45 @@
+---
+# Déploiement complet de l'infrastructure.
+# Usage: ansible-playbook playbooks/site.yml --ask-vault-pass
+
+- name: Apply common configuration to all hosts
+  hosts: all
+  roles:
+    - common
+
+- name: Deploy NetBox (IPAM)
+  hosts: netbox-s1
+  roles:
+    - netbox
+
+- name: Deploy Elasticsearch
+  hosts: elastic-s1
+  roles:
+    - elasticsearch
+
+- name: Configure Bastion SSH
+  hosts: bastion-s2
+  roles:
+    - bastion
+
+- name: Deploy Web server
+  hosts: web-s2
+  roles:
+    - web
+
+- name: Deploy Filebeat log shipping
+  hosts: all
+  roles:
+    - filebeat
+
+- name: Deploy Metricbeat system metrics
+  hosts: all
+  roles:
+    - metricbeat
+
+# Met l'IPAM à jour à chaque déploiement (cf. docs/adr/0001-ipam-automation.md).
+- name: Create NetBox API token
+  ansible.builtin.import_playbook: netbox-token.yml
+
+- name: Populate NetBox IPAM
+  ansible.builtin.import_playbook: netbox-populate.yml
