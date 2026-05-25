@@ -1,0 +1,54 @@
+---
+- name: Install Nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+  tags: [web, packages]
+
+- name: Deploy Nginx site configuration
+  ansible.builtin.template:
+    src: site.conf.j2
+    dest: /etc/nginx/sites-available/{{ web_server_name }}
+    mode: "0644"
+  notify: Reload nginx
+  tags: [web, nginx]
+
+- name: Enable site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/{{ web_server_name }}
+    dest: /etc/nginx/sites-enabled/{{ web_server_name }}
+    state: link
+  notify: Reload nginx
+  tags: [web, nginx]
+
+- name: Remove default Nginx site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload nginx
+  tags: [web, nginx]
+
+- name: Create web root directory
+  ansible.builtin.file:
+    path: "{{ web_root }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: "0755"
+  tags: [web, deploy]
+
+- name: Deploy website content
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: "{{ web_root }}/index.html"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+  tags: [web, deploy]
+
+- name: Enable and start Nginx
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+  tags: [web, nginx]

@@ -1,0 +1,4 @@
+---
+web_server_name: "web-s2.{{ dns_domain_site2 }}"
+web_root: /var/www/html
+web_listen_port: 80
