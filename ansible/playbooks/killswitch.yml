@@ -1,0 +1,74 @@
+---
+# Kill switch - stoppe/démarre OpenVPN sur les deux pfSense (via pfSsh.php).
+# La config VPN n'est pas modifiée : la restauration est instantanée.
+#   make killswitch-cut      (ansible-playbook ... -e killswitch=cut)
+#   make killswitch-restore  (ansible-playbook ... -e killswitch=restore)
+
+- name: "Emergency cut-off - {{ killswitch | default('undefined') }}"
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+
+  vars:
+    bastion_host: "{{ hostvars['bastion-s2'].ansible_host }}"
+    pfsense_s1: "10.10.0.1"
+    pfsense_s2: "10.20.0.1"
+    vpn_tunnel_peer: "{{ vpn_tunnel_s2 }}"
+
+  tasks:
+    - name: Validate killswitch parameter
+      ansible.builtin.assert:
+        that:
+          - killswitch is defined
+          - killswitch in ['cut', 'restore']
+        fail_msg: "Usage: -e killswitch=cut ou -e killswitch=restore"
+
+    # --- CUT : stop OpenVPN ---
+    - name: "[CUT] Stop OpenVPN server - pfSense S1"
+      ansible.builtin.shell: |
+        ssh -o StrictHostKeyChecking=no -o ProxyJump=bastion@{{ bastion_host }} admin@{{ pfsense_s1 }} \
+          'pfSsh.php playback svc stop openvpn server 1'
+      when: killswitch == 'cut'
+      changed_when: true
+
+    - name: "[CUT] Stop OpenVPN client - pfSense S2"
+      ansible.builtin.shell: |
+        ssh -o StrictHostKeyChecking=no -o ProxyJump=bastion@{{ bastion_host }} admin@{{ pfsense_s2 }} \
+          'pfSsh.php playback svc stop openvpn client 1'
+      when: killswitch == 'cut'
+      changed_when: true
+
+    # --- RESTORE : start OpenVPN ---
+    - name: "[RESTORE] Start OpenVPN server - pfSense S1"
+      ansible.builtin.shell: |
+        ssh -o StrictHostKeyChecking=no -o ProxyJump=bastion@{{ bastion_host }} admin@{{ pfsense_s1 }} \
+          'pfSsh.php playback svc start openvpn server 1'
+      when: killswitch == 'restore'
+      changed_when: true
+
+    - name: "[RESTORE] Start OpenVPN client - pfSense S2"
+      ansible.builtin.shell: |
+        ssh -o StrictHostKeyChecking=no -o ProxyJump=bastion@{{ bastion_host }} admin@{{ pfsense_s2 }} \
+          'pfSsh.php playback svc start openvpn client 1'
+      when: killswitch == 'restore'
+      changed_when: true
+
+    # --- VERIFY ---
+    - name: Wait for VPN state to settle
+      ansible.builtin.pause:
+        seconds: 5
+
+    - name: Verify inter-site connectivity
+      ansible.builtin.shell: |
+        ssh -o StrictHostKeyChecking=no -o ProxyJump=bastion@{{ bastion_host }} admin@{{ pfsense_s1 }} \
+          'ping -c1 -W3 {{ vpn_tunnel_peer }}'
+      register: ping_result
+      failed_when: false
+      changed_when: false
+
+    - name: Status report
+      ansible.builtin.debug:
+        msg: >
+          Emergency {{ killswitch | upper }} completed.
+          Inter-site VPN: {{ 'DOWN' if ping_result.rc != 0 else 'UP' }}.
