@@ -1,0 +1,41 @@
+---
+name: Ansible Lint
+
+on:
+  push:
+    branches: [main]
+    paths: ['ansible/**']
+  pull_request:
+    branches: [main]
+    paths: ['ansible/**']
+
+jobs:
+  lint:
+    name: Lint Ansible code
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ansible
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install 'ansible-core>=2.16,<2.18' 'ansible-lint>=24,<25' 'yamllint>=1,<2'
+          ansible-galaxy install -r requirements.yml
+
+      - name: Run yamllint
+        run: yamllint -c .yamllint .
+
+      - name: Run ansible-lint
+        run: ansible-lint -c .ansible-lint
+
+      - name: Run syntax check
+        run: ansible-playbook playbooks/site.yml --syntax-check
