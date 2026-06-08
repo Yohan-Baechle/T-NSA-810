@@ -1,0 +1,4 @@
+# Tout changement sur l'infrastructure nécessite une review
+* @yohan
+ansible/ @yohan
+.github/ @yohan
