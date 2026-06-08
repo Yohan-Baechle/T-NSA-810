@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <title>CIA - Observabilité (Elasticsearch)</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 840px;
+        margin: 24px auto;
+        padding: 0 16px;
+        color: #1f2937;
+      }
+      h1 {
+        color: #1e3a8a;
+      }
+      .card {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin: 18px 0;
+        box-shadow: 0 1px 3px #0001;
+      }
+      .meta {
+        color: #6b7280;
+        font-size: 14px;
+      }
+      code {
+        background: #f3f4f6;
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>CIA : Analyse de la télémétrie centralisée</h1>
+    <p class="meta">
+      Source : Elasticsearch (cluster <code>cia-logging</code>). Données :
+      <b>logs</b> (Filebeat, index <code>filebeat-*</code> /
+      <code>pfsense-*</code>) et <b>métriques système</b> (Metricbeat, index
+      <code>metricbeat-*</code>) des deux sites. Analyse réalisée via les
+      <b>aggregations natives d'Elasticsearch</b> (pas de Kibana/Grafana -
+      contrainte 2 Gio/VM). Chaque graphe correspond à une requête ES affichée
+      par <code>scripts/observability.py</code>.
+    </p>
+    <div class="card">
+      <h3>Logs par site</h3>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="720"
+        height="142"
+        font-family="monospace"
+      >
+        <text x="16" y="28" font-size="17" font-weight="bold">
+          Logs par site
+        </text>
+        <text x="16" y="68" font-size="13">site2</text>
+        <rect x="230" y="50" width="400" height="26" fill="#2563eb" rx="3" />
+        <text x="638" y="68" font-size="13" fill="#333">106388</text>
+        <text x="16" y="104" font-size="13">site1</text>
+        <rect x="230" y="86" width="184" height="26" fill="#2563eb" rx="3" />
+        <text x="422" y="104" font-size="13" fill="#333">49083</text>
+      </svg>
+    </div>
+    <div class="card">
+      <h3>Logs par hôte</h3>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="720"
+        height="214"
+        font-family="monospace"
+      >
+        <text x="16" y="28" font-size="17" font-weight="bold">
+          Logs par hôte
+        </text>
+        <text x="16" y="68" font-size="13">bastion-s2</text>
+        <rect x="230" y="50" width="400" height="26" fill="#7c3aed" rx="3" />
+        <text x="638" y="68" font-size="13" fill="#333">81659</text>
+        <text x="16" y="104" font-size="13">elastic-s1</text>
+        <rect x="230" y="86" width="131" height="26" fill="#7c3aed" rx="3" />
+        <text x="369" y="104" font-size="13" fill="#333">26899</text>
+        <text x="16" y="140" font-size="13">web-s2</text>
+        <rect x="230" y="122" width="121" height="26" fill="#7c3aed" rx="3" />
+        <text x="359" y="140" font-size="13" fill="#333">24729</text>
+        <text x="16" y="176" font-size="13">netbox-s1</text>
+        <rect x="230" y="158" width="108" height="26" fill="#7c3aed" rx="3" />
+        <text x="346" y="176" font-size="13" fill="#333">22184</text>
+      </svg>
+    </div>
+    <div class="card">
+      <h3>Logs par fichier source</h3>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="720"
+        height="286"
+        font-family="monospace"
+      >
+        <text x="16" y="28" font-size="17" font-weight="bold">
+          Logs par fichier source
+        </text>
+        <text x="16" y="68" font-size="13">auth.log</text>
+        <rect x="230" y="50" width="400" height="26" fill="#ea580c" rx="3" />
+        <text x="638" y="68" font-size="13" fill="#333">92001</text>
+        <text x="16" y="104" font-size="13">syslog</text>
+        <rect x="230" y="86" width="271" height="26" fill="#ea580c" rx="3" />
+        <text x="509" y="104" font-size="13" fill="#333">62487</text>
+        <text x="16" y="140" font-size="13">access.log</text>
+        <rect x="230" y="122" width="2" height="26" fill="#ea580c" rx="3" />
+        <text x="240" y="140" font-size="13" fill="#333">625</text>
+        <text x="16" y="176" font-size="13">fail2ban.log</text>
+        <rect x="230" y="158" width="1" height="26" fill="#ea580c" rx="3" />
+        <text x="239" y="176" font-size="13" fill="#333">347</text>
+        <text x="16" y="212" font-size="13">web-s2.site2.lan_access.log</text>
+        <rect x="230" y="194" width="1" height="26" fill="#ea580c" rx="3" />
+        <text x="238" y="212" font-size="13" fill="#333">10</text>
+        <text x="16" y="248" font-size="13">error.log</text>
+        <rect x="230" y="230" width="1" height="26" fill="#ea580c" rx="3" />
+        <text x="238" y="248" font-size="13" fill="#333">1</text>
+      </svg>
+    </div>
+    <div class="card">
+      <h3>Tentatives SSH échouées par hôte (total 0)</h3>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="720"
+        height="106"
+        font-family="monospace"
+      >
+        <text x="16" y="28" font-size="17" font-weight="bold">
+          SSH 'Failed password' par hôte
+        </text>
+        <text x="16" y="68" font-size="13">(aucune donnée)</text>
+        <rect x="230" y="50" width="1" height="26" fill="#dc2626" rx="3" />
+        <text x="238" y="68" font-size="13" fill="#333">0</text>
+      </svg>
+    </div>
+    <div class="card">
+      <h3>Top IP sources des tentatives SSH échouées</h3>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="720"
+        height="106"
+        font-family="monospace"
+      >
+        <text x="16" y="28" font-size="17" font-weight="bold">
+          Top IP attaquantes (SSH)
+        </text>
+        <text x="16" y="68" font-size="13">(aucune donnée)</text>
+        <rect x="230" y="50" width="1" height="26" fill="#dc2626" rx="3" />
+        <text x="238" y="68" font-size="13" fill="#333">0</text>
+      </svg>
+    </div>
+    <div class="card">
+      <h3>Volumétrie de logs / jour (tous composants)</h3>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="720"
+        height="240"
+        font-family="monospace"
+      >
+        <text x="16" y="26" font-size="17" font-weight="bold">
+          Volumétrie de logs / jour
+        </text>
+        <line x1="50" y1="190" x2="670" y2="190" stroke="#ccc" />
+        <polyline
+          fill="none"
+          stroke="#2563eb"
+          stroke-width="2"
+          points="50,179 139,165 227,183 316,184 404,184 493,184 581,151 670,50"
+        />
+        <text x="50" y="208" font-size="11" text-anchor="middle" fill="#666">
+          06-01
+        </text>
+        <text x="404" y="208" font-size="11" text-anchor="middle" fill="#666">
+          06-05
+        </text>
+        <text x="670" y="208" font-size="11" text-anchor="middle" fill="#666">
+          06-08
+        </text>
+        <text x="670" y="40" font-size="11" fill="#666" text-anchor="end">
+          max=90156
+        </text>
+      </svg>
+    </div>
+    <div class="card">
+      <h3>IP sources bloquées par les pfSense (≈21098 blocages)</h3>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="720"
+        height="214"
+        font-family="monospace"
+      >
+        <text x="16" y="28" font-size="17" font-weight="bold">
+          IP bloquées par le firewall
+        </text>
+        <text x="16" y="68" font-size="13">51.178.91.252</text>
+        <rect x="230" y="50" width="400" height="26" fill="#b91c1c" rx="3" />
+        <text x="638" y="68" font-size="13" fill="#333">27</text>
+        <text x="16" y="104" font-size="13">51.178.91.253</text>
+        <rect x="230" y="86" width="385" height="26" fill="#b91c1c" rx="3" />
+        <text x="623" y="104" font-size="13" fill="#333">26</text>
+        <text x="16" y="140" font-size="13">145.239.154.252</text>
+        <rect x="230" y="122" width="355" height="26" fill="#b91c1c" rx="3" />
+        <text x="593" y="140" font-size="13" fill="#333">24</text>
+        <text x="16" y="176" font-size="13">145.239.154.253</text>
+        <rect x="230" y="158" width="340" height="26" fill="#b91c1c" rx="3" />
+        <text x="578" y="176" font-size="13" fill="#333">23</text>
+      </svg>
+    </div>
+    <div class="card">
+      <h3>Mémoire moyenne par hôte (%)</h3>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="720"
+        height="214"
+        font-family="monospace"
+      >
+        <text x="16" y="28" font-size="17" font-weight="bold">
+          Mémoire utilisée moyenne (%)
+        </text>
+        <text x="16" y="68" font-size="13">netbox-s1</text>
+        <rect x="230" y="50" width="356" height="26" fill="#0891b2" rx="3" />
+        <text x="594" y="68" font-size="13" fill="#333">83.7</text>
+        <text x="16" y="104" font-size="13">elastic-s1</text>
+        <rect x="230" y="86" width="400" height="26" fill="#0891b2" rx="3" />
+        <text x="638" y="104" font-size="13" fill="#333">93.9</text>
+        <text x="16" y="140" font-size="13">web-s2</text>
+        <rect x="230" y="122" width="353" height="26" fill="#0891b2" rx="3" />
+        <text x="591" y="140" font-size="13" fill="#333">83.0</text>
+        <text x="16" y="176" font-size="13">bastion-s2</text>
+        <rect x="230" y="158" width="370" height="26" fill="#0891b2" rx="3" />
+        <text x="608" y="176" font-size="13" fill="#333">87.0</text>
+      </svg>
+    </div>
+    <div class="card">
+      <h3>Charge CPU moyenne par hôte (%)</h3>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="720"
+        height="214"
+        font-family="monospace"
+      >
+        <text x="16" y="28" font-size="17" font-weight="bold">
+          CPU utilisé moyen (%)
+        </text>
+        <text x="16" y="68" font-size="13">netbox-s1</text>
+        <rect x="230" y="50" width="154" height="26" fill="#0891b2" rx="3" />
+        <text x="392" y="68" font-size="13" fill="#333">2.4</text>
+        <text x="16" y="104" font-size="13">elastic-s1</text>
+        <rect x="230" y="86" width="400" height="26" fill="#0891b2" rx="3" />
+        <text x="638" y="104" font-size="13" fill="#333">6.2</text>
+        <text x="16" y="140" font-size="13">web-s2</text>
+        <rect x="230" y="122" width="90" height="26" fill="#0891b2" rx="3" />
+        <text x="328" y="140" font-size="13" fill="#333">1.4</text>
+        <text x="16" y="176" font-size="13">bastion-s2</text>
+        <rect x="230" y="158" width="141" height="26" fill="#0891b2" rx="3" />
+        <text x="379" y="176" font-size="13" fill="#333">2.2</text>
+      </svg>
+    </div>
+  </body>
+</html>

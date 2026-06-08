@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="214" font-family="monospace">
+<text x="16" y="28" font-size="17" font-weight="bold">Logs par hôte</text>
+<text x="16" y="68" font-size="13">bastion-s2</text>
+<rect x="230" y="50" width="400" height="26" fill="#7c3aed" rx="3"/>
+<text x="638" y="68" font-size="13" fill="#333">81659</text>
+<text x="16" y="104" font-size="13">elastic-s1</text>
+<rect x="230" y="86" width="131" height="26" fill="#7c3aed" rx="3"/>
+<text x="369" y="104" font-size="13" fill="#333">26899</text>
+<text x="16" y="140" font-size="13">web-s2</text>
+<rect x="230" y="122" width="121" height="26" fill="#7c3aed" rx="3"/>
+<text x="359" y="140" font-size="13" fill="#333">24729</text>
+<text x="16" y="176" font-size="13">netbox-s1</text>
+<rect x="230" y="158" width="108" height="26" fill="#7c3aed" rx="3"/>
+<text x="346" y="176" font-size="13" fill="#333">22184</text>
+</svg>

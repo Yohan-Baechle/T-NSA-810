@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="286" font-family="monospace">
+<text x="16" y="28" font-size="17" font-weight="bold">Logs par fichier source</text>
+<text x="16" y="68" font-size="13">auth.log</text>
+<rect x="230" y="50" width="400" height="26" fill="#ea580c" rx="3"/>
+<text x="638" y="68" font-size="13" fill="#333">92001</text>
+<text x="16" y="104" font-size="13">syslog</text>
+<rect x="230" y="86" width="271" height="26" fill="#ea580c" rx="3"/>
+<text x="509" y="104" font-size="13" fill="#333">62487</text>
+<text x="16" y="140" font-size="13">access.log</text>
+<rect x="230" y="122" width="2" height="26" fill="#ea580c" rx="3"/>
+<text x="240" y="140" font-size="13" fill="#333">625</text>
+<text x="16" y="176" font-size="13">fail2ban.log</text>
+<rect x="230" y="158" width="1" height="26" fill="#ea580c" rx="3"/>
+<text x="239" y="176" font-size="13" fill="#333">347</text>
+<text x="16" y="212" font-size="13">web-s2.site2.lan_access.log</text>
+<rect x="230" y="194" width="1" height="26" fill="#ea580c" rx="3"/>
+<text x="238" y="212" font-size="13" fill="#333">10</text>
+<text x="16" y="248" font-size="13">error.log</text>
+<rect x="230" y="230" width="1" height="26" fill="#ea580c" rx="3"/>
+<text x="238" y="248" font-size="13" fill="#333">1</text>
+</svg>
