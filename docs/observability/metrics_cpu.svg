@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="214" font-family="monospace">
+<text x="16" y="28" font-size="17" font-weight="bold">CPU utilisé moyen (%)</text>
+<text x="16" y="68" font-size="13">netbox-s1</text>
+<rect x="230" y="50" width="154" height="26" fill="#0891b2" rx="3"/>
+<text x="392" y="68" font-size="13" fill="#333">2.4</text>
+<text x="16" y="104" font-size="13">elastic-s1</text>
+<rect x="230" y="86" width="400" height="26" fill="#0891b2" rx="3"/>
+<text x="638" y="104" font-size="13" fill="#333">6.2</text>
+<text x="16" y="140" font-size="13">web-s2</text>
+<rect x="230" y="122" width="90" height="26" fill="#0891b2" rx="3"/>
+<text x="328" y="140" font-size="13" fill="#333">1.4</text>
+<text x="16" y="176" font-size="13">bastion-s2</text>
+<rect x="230" y="158" width="141" height="26" fill="#0891b2" rx="3"/>
+<text x="379" y="176" font-size="13" fill="#333">2.2</text>
+</svg>

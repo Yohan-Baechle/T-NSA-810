@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="214" font-family="monospace">
+<text x="16" y="28" font-size="17" font-weight="bold">IP bloquées par le firewall</text>
+<text x="16" y="68" font-size="13">51.178.91.252</text>
+<rect x="230" y="50" width="400" height="26" fill="#b91c1c" rx="3"/>
+<text x="638" y="68" font-size="13" fill="#333">27</text>
+<text x="16" y="104" font-size="13">51.178.91.253</text>
+<rect x="230" y="86" width="385" height="26" fill="#b91c1c" rx="3"/>
+<text x="623" y="104" font-size="13" fill="#333">26</text>
+<text x="16" y="140" font-size="13">145.239.154.252</text>
+<rect x="230" y="122" width="355" height="26" fill="#b91c1c" rx="3"/>
+<text x="593" y="140" font-size="13" fill="#333">24</text>
+<text x="16" y="176" font-size="13">145.239.154.253</text>
+<rect x="230" y="158" width="340" height="26" fill="#b91c1c" rx="3"/>
+<text x="578" y="176" font-size="13" fill="#333">23</text>
+</svg>

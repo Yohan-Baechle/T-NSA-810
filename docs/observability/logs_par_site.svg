@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="142" font-family="monospace">
+<text x="16" y="28" font-size="17" font-weight="bold">Logs par site</text>
+<text x="16" y="68" font-size="13">site2</text>
+<rect x="230" y="50" width="400" height="26" fill="#2563eb" rx="3"/>
+<text x="638" y="68" font-size="13" fill="#333">106388</text>
+<text x="16" y="104" font-size="13">site1</text>
+<rect x="230" y="86" width="184" height="26" fill="#2563eb" rx="3"/>
+<text x="422" y="104" font-size="13" fill="#333">49083</text>
+</svg>

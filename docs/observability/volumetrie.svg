@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="240" font-family="monospace">
+<text x="16" y="26" font-size="17" font-weight="bold">Volumétrie de logs / jour</text>
+<line x1="50" y1="190" x2="670" y2="190" stroke="#ccc"/>
+<polyline fill="none" stroke="#2563eb" stroke-width="2" points="50,179 139,165 227,183 316,184 404,184 493,184 581,151 670,50"/>
+<text x="50" y="208" font-size="11" text-anchor="middle" fill="#666">06-01</text>
+<text x="404" y="208" font-size="11" text-anchor="middle" fill="#666">06-05</text>
+<text x="670" y="208" font-size="11" text-anchor="middle" fill="#666">06-08</text>
+<text x="670" y="40" font-size="11" fill="#666" text-anchor="end">max=90156</text>
+</svg>
